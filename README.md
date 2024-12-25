@@ -1,48 +1,28 @@
 # TestInPython
 
-This repository contains a Python script that demonstrates downloading an image from a specified URL and saving it locally.
+This repository contains Python scripts for testing and demonstrating functionalities related to REST APIs, DynamoDB integration, and other utilities.
 
-## Files in the Repository
+## Scripts Overview
 
-- **`test.py`**: The main Python script that performs the image download.
-- **`bear.jpg`**: An example image file included in the repository.
-- **`README.md`**: This file, providing an overview of the repository.
+### 1. `test.py`
+The `test.py` script demonstrates how to fetch random images from a public API based on an animal type and save the metadata to a database. This script provides foundational functionality for interacting with REST APIs.
 
-## Prerequisites
+### 2. `function.py`
+The `function.py` script builds upon the functionality in `test.py` and adds the following features:
 
-Ensure you have Python installed on your system.
+#### Features:
+1. **Fetching Images**:
+   - Fetches images from a public API (`https://place.dog/`) based on a specified count.
+   - Designed to work with any API providing animal images.
 
-## How to Use
+2. **Saving Images to DynamoDB**:
+   - Saves metadata of fetched images into an AWS DynamoDB table named `AnimalPictures`.
+   - Metadata includes:
+     - `AnimalType`: The type of animal (e.g., dog, cat).
+     - `Timestamp`: The time the image was saved, stored as a UNIX timestamp (in milliseconds).
+     - `ImageURL`: The URL of the fetched image.
+     - `ImageID`: A unique identifier for the image.
 
-1. **Clone the Repository**:
-
-   ```bash
-   git clone https://github.com/olastanczak24/TestInPython.git
-   ```
-
-2. **Navigate to the Directory**:
-
-   ```bash
-   cd TestInPython
-   ```
-
-3. **Run the Script**:
-
-   ```bash
-   python test.py
-   ```
-
-   The script will download an image from the specified URL and save it as `bear.jpg` in the current directory.
-
-## Customizing the Image URL
-
-To download a different image, modify the `url` variable in `test.py` with the desired image URL.
-
-## Dependencies
-
-This script uses the `requests` library. If it's not installed, you can add it using:
-
-```bash
-pip install requests
-```
+3. **Fetching the Latest Picture**:
+   - Provides a REST API endpoint `/get_last_picture` that queries the DynamoDB table and retrieves the `Timestamp` of the most recently saved picture for a specified `AnimalType`.
 
