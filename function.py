@@ -15,9 +15,9 @@ def fetch_pictures(count):
             print(f"Error fetching image: {e}")
     return images
 
-# Test fetching 3 images
-image_urls = fetch_pictures(3)
-print(f"Fetched image URLs: {image_urls}")
+# Test fetching 1 image
+image_url = fetch_pictures(1)
+print(f"Fetched image URL: {image_url}")
 
 import boto3
 import uuid
@@ -27,8 +27,8 @@ import time
 dynamodb = boto3.resource('dynamodb', region_name='eu-central-1')  # Replace with your AWS region
 table = dynamodb.Table('AnimalPictures')  # Replace with your table name
 
-def save_images_to_dynamodb(animal_type, image_urls):
-    for image_url in image_urls:
+def save_images_to_dynamodb(animal_type, image_url):
+    for image_url in image_url:
         print(f"Saving image to DynamoDB: {image_url}")
         table.put_item(
             Item={
@@ -40,10 +40,10 @@ def save_images_to_dynamodb(animal_type, image_urls):
         )
     print("All images saved to DynamoDB!")
 
-# Test saving 3 image URLs
+# Test saving 1 image URL
 animal_type = "dog"
-image_urls = ["https://place.dog/200/300", "https://place.dog/200/300", "https://place.dog/200/300"]
-save_images_to_dynamodb(animal_type, image_urls)
+image_url = ["https://place.dog/200/300"]
+save_images_to_dynamodb(animal_type, image_url)
 
 
 import boto3
