@@ -45,40 +45,72 @@ animal_type = "dog"
 image_url = ["https://place.dog/200/300"]
 save_images_to_dynamodb(animal_type, image_url)
 
+animal_type = "bear"
+image_url = ["https://placebear.com/g/200/300"]
+save_images_to_dynamodb(animal_type, image_url)
+
 
 import boto3
 from boto3.dynamodb.conditions import Key
+import datetime
 
-# Initialize DynamoDB
-dynamodb = boto3.resource('dynamodb', region_name='eu-central-1')  # Replace with your region
-table = dynamodb.Table('AnimalPictures')  # Replace with your table name
-
-def get_last_picture_timestamp(animal_type):
+def get_last_saved_photo(animal_types):
     try:
-        # Query DynamoDB to get the latest picture
-        response = table.query(
-            KeyConditionExpression=Key('AnimalType').eq(animal_type),
-            ScanIndexForward=False,  # Get the latest item
-            Limit=1
-        )
+        latest_photo = None
+        latest_timestamp = None
 
-        if response.get('Items'):
-            # Extract and return only the timestamp
-            last_picture = response['Items'][0]
-            return {"Timestamp": last_picture['Timestamp']}
+        for animal_type in animal_types:
+            # Query DynamoDB for the last saved photo of this animal type
+            response = table.query(
+                KeyConditionExpression=Key('AnimalType').eq(animal_type),
+                ScanIndexForward=False,  # Get the most recent item
+                Limit=1
+            )
+
+            if response.get('Items'):
+                last_picture = response['Items'][0]
+                raw_timestamp = last_picture.get('Timestamp')  # Safely retrieve the Timestamp field
+
+                if not raw_timestamp:
+                    print(f"Warning: Missing Timestamp for {animal_type}")
+                    continue
+
+                try:
+                    raw_timestamp = int(raw_timestamp)  # Convert to integer
+                except ValueError:
+                    print(f"Warning: Invalid Timestamp format for {animal_type}")
+                    continue
+
+                readable_timestamp = datetime.datetime.fromtimestamp(raw_timestamp / 1000).isoformat()
+
+                # Check if this is the latest across all animal types
+                if latest_timestamp is None or raw_timestamp > latest_timestamp:
+                    latest_photo = {
+                        "AnimalType": animal_type,
+                        "RawTimestamp": raw_timestamp,
+                        "ReadableTimestamp": readable_timestamp,
+                        "ImageURL": last_picture['ImageURL']
+                    }
+                    latest_timestamp = raw_timestamp
+
+        if latest_photo:
+            return latest_photo
         else:
-            return {"error": f"No pictures found for {animal_type}"}
+            return {"error": "No valid photos found for the given animal types"}
     except Exception as e:
         return {"error": str(e)}
 
 # Test the function
 if __name__ == "__main__":
-    animal_type = "dog"  # Replace with the desired animal type
-    result = get_last_picture_timestamp(animal_type)
-    print(result)
+    # List of animal types to check
+    animal_types = ["dog", "bear"]  # Add more if needed
+    result = get_last_saved_photo(animal_types)
 
-import datetime
-
-Timestamp = int('1735163477994')  # Example value from DynamoDB
-readable_timestamp = datetime.datetime.fromtimestamp(Timestamp / 1000).isoformat()
-print(readable_timestamp)
+    if "error" not in result:
+        print("Last saved photo details:")
+        print(f"Animal Type: {result['AnimalType']}")
+        print(f"Raw Timestamp: {result['RawTimestamp']}")
+        print(f"Readable Timestamp: {result['ReadableTimestamp']}")
+        print(f"Image URL: {result['ImageURL']}")
+    else:
+        print(result["error"])
