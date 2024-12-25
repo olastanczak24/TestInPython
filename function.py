@@ -79,6 +79,6 @@ if __name__ == "__main__":
 
 import datetime
 
-timestamp = 1735152102336
-readable_timestamp = datetime.datetime.fromtimestamp(timestamp / 1000).isoformat()
+Timestamp = int('1735163477994')  # Example value from DynamoDB
+readable_timestamp = datetime.datetime.fromtimestamp(Timestamp / 1000).isoformat()
 print(readable_timestamp)
